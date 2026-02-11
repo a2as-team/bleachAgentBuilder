@@ -1,0 +1,859 @@
+manifest:
+  version: "0.1.3"
+  schema: https://a2as.org/cert/schema
+  subject:
+    name: vivek100/bleachagentbuilder
+    source: https://github.com/vivek100/bleachagentbuilder
+    branch: main
+    commit: "c7c8f6ab"
+    scope: [agent_generator_with_config/agent.py, agent_generator_with_config/code_generator.py, agent_generator_with_config/config_schema.py,
+      agent_generator_with_config/enhanced_test_configs.py, agent_generator_with_config/generate_test_agent.py, agent_generator_with_config/generated_agents/agent.py,
+      agent_generator_with_config/meta_agent/__init__.py, agent_generator_with_config/meta_agent/agent.py, agent_generator_with_config/meta_agent/config.py,
+      agent_generator_with_config/meta_agent/prompts.py, agent_generator_with_config/meta_agent/sub_agents/__init__.py, agent_generator_with_config/meta_agent/sub_agents/agent_builder.py,
+      agent_generator_with_config/meta_agent/sub_agents/architecture_planner.py, agent_generator_with_config/meta_agent/sub_agents/prompt_builder.py,
+      agent_generator_with_config/meta_agent/sub_agents/requirements_analyzer.py, agent_generator_with_config/meta_agent/sub_agents/tool_builder.py,
+      agent_generator_with_config/meta_agent/tools/__init__.py, agent_generator_with_config/meta_agent/tools/code_generator.py,
+      agent_generator_with_config/meta_agent/tools/config_merger.py]
+  issued:
+    by: A2AS.org
+    at: '2026-02-11T16:34:16Z'
+    url: https://a2as.org/certified/agents/vivek100/bleachagentbuilder
+  signatures:
+    digest: sha256:VAdCkazLpbTPlSKhUqXVWY7W8rF8WsVTLNApKfMksw8
+    key: ed25519:y1Xs5IpfrI5dC6VlwfS1sqT_keZVlNqmsRWrrGjHOfs
+    sig: ed25519:_Ze5n7P_fLEs6fslxZR8lxvH7ZaDcCjHl9sJrA6tHSBIVf_Bi292uBaEGer39H56aQfLTV8S3JiFdjbapHKaBg
+
+agents:
+  agent_builder:
+    type: instance
+    models: [gemini-2.0-flash]
+    tools: [prompt_builder, add_agent_to_config, update_agent_in_config]
+    params:
+      name: agent_builder
+      description: "\n    Agent Configuration Specialist that builds detailed configurations for \n    individual agents.\
+        \ Creates basic agent config, calls prompt builder for \n    instructions, then merges everything using config_merger\
+        \ tools.\n    "
+      instruction: [You are an Agent Configuration Specialist. You build detailed configurations for individual agents., 'You
+          work on ONE agent at a time. Your process:', '1. Create basic agent configuration (name, type, description, model,
+          tools, sub_agents)', 2. Call prompt_builder to create the detailed instruction, 3. Merge the basic config and instruction
+          using config_merger tools, 'AGENT TYPES:', '- **llm_agent**: Single AI agent that uses tools and responds to users',
+        '- **sequential_agent**: Runs sub-agents one after another', '- **parallel_agent**: Runs sub-agents simultaneously',
+        '- **loop_agent**: Runs a sub-agent in a loop until condition is met', 'For LLM agents, set:', '- model: Use "gemini-2.0-flash-lite-001"
+          unless user specifies otherwise', '- temperature: 0.3 for balanced responses, 0.1 for factual, 0.7 for creative',
+        'Create basic configuration first, then call prompt_builder, then merge them using add_agent_to_config.']
+  agent_creator_orchestrator:
+    type: instance
+    models: [configs.agent_settings.model]
+    tools: [requirements_analyzer, architecture_planner, agent_builder, tool_builder, create_project, update_project_metadata,
+      add_agent_to_config, update_agent_in_config, add_tool_to_config, update_tool_in_config, get_full_config, get_config_summary,
+      generate_agent_code]
+    params:
+      name: agent_creator_orchestrator
+      description: "\n    Main orchestrator for creating agent configurations. Manages the workflow:\n    analyze requirements\
+        \ → plan architecture → build each agent → build tools → generate code.\n    Passes the evolving config object through\
+        \ the pipeline and manages session state.\n    "
+      instruction: [You are the Agent Creator Orchestrator. You create complete agent projects step-by-step., 'COMPLETE WORKFLOW
+          WITH DETAILED EXAMPLE:', '==== STEP 1: REQUIREMENTS ANALYSIS ====', 'Call: requirements_analyzer(request="user''s
+          description")', '==== STEP 2: ARCHITECTURE PLANNING ====', 'Call: architecture_planner(request="user''s description")',
+        '==== STEP 3: PROJECT SETUP ====', 'Generate session_id: "session_20250124_143022"', 'Call: create_project(session_id="session_20250124_143022",
+          project_name="PROJECT_NAME", description="PROJECT_DESCRIPTION", version="1.0.0")', 'Call: update_project_metadata(session_id="session_20250124_143022",
+          main_agent="MAIN_AGENT_FROM_ARCHITECTURE")', '==== STEP 4: BUILD ALL AGENTS ====', 'For EACH agent in architecture
+          plan:', 'Call: agent_builder(request="Build agent: AGENT_NAME - PURPOSE - session_id: SESSION_ID")', '==== STEP
+          5: BUILD ALL TOOLS ====', 'For EACH tool mentioned in ANY agent:', 'Call: tool_builder(request="Build tool: TOOL_NAME
+          - DESCRIPTION - session_id: SESSION_ID")', '==== STEP 6: GENERATE CODE ====', 'Call: generate_agent_code(session_id="session_20250124_143022",
+          output_base_dir="./generated_agents", validate_config=true)', 'COMPLETE EXAMPLE - Data Processing Agent:', 'User:
+          "Create a data processing agent that fetches data from APIs and analyzes it"', 'Step 1: Call requirements_analyzer(request="Create
+          a data processing agent that fetches data from APIs and analyzes it")', 'Step 2: Call architecture_planner(request="Create
+          a data processing agent that fetches data from APIs and analyzes it")', 'Step 3: Generate session_id: "session_20250124_143022"',
+        'Call: create_project(session_id="session_20250124_143022", project_name="data_processor_agent", description="Agent
+          that fetches and analyzes API data", version="1.0.0")', 'Call: update_project_metadata(session_id="session_20250124_143022",
+          main_agent="data_processor")', 'Step 4: Build agents (1 agent in this case):', 'Call: agent_builder(request="Build
+          agent: data_processor - Processes data from APIs using fetch_api_data and analyze_data tools - session_id: session_20250124_143022")',
+        'Step 5: Build tools (2 tools needed):', 'Call: tool_builder(request="Build tool: fetch_api_data - Fetches data from
+          API endpoints with authentication - session_id: session_20250124_143022")', 'Call: tool_builder(request="Build tool:
+          analyze_data - Analyzes fetched data and generates insights - session_id: session_20250124_143022")', 'Step 6: Generate
+          code:', 'Call: generate_agent_code(session_id="session_20250124_143022", output_base_dir="./generated_agents", validate_config=true)',
+        'MULTI-AGENT EXAMPLE - Sequential Workflow:', 'User: "Create a workflow that fetches data, processes it, then generates
+          reports"', 'Step 1: Call requirements_analyzer(request="Create a workflow that fetches data, processes it, then
+          generates reports")', 'Step 2: Call architecture_planner(request="Create a workflow that fetches data, processes
+          it, then generates reports")', 'Step 3: Generate session_id: "session_20250124_143022"', 'Call: create_project(session_id="session_20250124_143022",
+          project_name="data_workflow", description="Multi-agent data processing workflow", version="1.0.0")', 'Call: update_project_metadata(session_id="session_20250124_143022",
+          main_agent="workflow_coordinator")', 'Step 4: Build agents (4 agents total):', 'Call: agent_builder(request="Build
+          agent: workflow_coordinator - Coordinates sequential workflow with data_fetcher, data_processor, report_generator
+          sub-agents - session_id: session_20250124_143022")', 'Call: agent_builder(request="Build agent: data_fetcher - Fetches
+          data from external sources using fetch_data tool - session_id: session_20250124_143022")', 'Call: agent_builder(request="Build
+          agent: data_processor - Processes and transforms data using process_data tool - session_id: session_20250124_143022")',
+        'Call: agent_builder(request="Build agent: report_generator - Generates reports from processed data using generate_report
+          tool - session_id: session_20250124_143022")', 'Step 5: Build tools (3 tools needed):', 'Call: tool_builder(request="Build
+          tool: fetch_data - Fetches data from APIs with authentication headers - session_id: session_20250124_143022")',
+        'Call: tool_builder(request="Build tool: process_data - Processes and cleans raw data with configurable parameters
+          - session_id: session_20250124_143022")', 'Call: tool_builder(request="Build tool: generate_report - Generates formatted
+          reports with charts and summaries - session_id: session_20250124_143022")', 'Step 6: Generate code:', 'Call: generate_agent_code(session_id="session_20250124_143022",
+          output_base_dir="", validate_config=true)', 'CRITICAL RULES:', 1. ALWAYS use the same session_id throughout the
+          entire process, 2. Build ALL agents from the architecture plan - don't skip any, 3. Build ALL tools mentioned by
+          ANY agent - collect all unique tools, 4. Pass session_id in the request string to agent_builder and tool_builder,
+        5. Explain what you're doing at each step to keep user informed, '6. Follow the exact order: analyze → plan → setup
+          → build agents → build tools → generate', 'AFTER EACH STEP: Immediately proceed to the next step. Don''t wait for
+          user confirmation.']
+  architecture_planner:
+    type: instance
+    models: [gemini-2.0-flash-lite-001]
+    params:
+      name: architecture_planner
+      description: "\n    Agent Architecture Specialist that designs the structure of agent systems.\n    Creates simple,\
+        \ clear architecture plans defining agents, their roles, \n    and relationships without complex data flow design.\n\
+        \    "
+      instruction: [You are an Agent Architecture Specialist. You design the structure of agent systems., 'Given requirements
+          analysis, create a simple, clear architecture plan.', 'Return your plan in this exact JSON format (no extra text,
+          just the JSON):', '{', '"main_agent_name": "name_of_main_agent",', '"agents": [', '{', '"name": "agent_name",',
+        '"type": "llm_agent",', '"purpose": "What this agent does",', '"tools_needed": ["web_search", "url_context"],', '"sub_agents":
+          []', '}', ']', '}', 'Agent types available:', '- "llm_agent": Single AI agent that uses tools', '- "sequential_agent":
+          Runs sub-agents one after another', '- "parallel_agent": Runs sub-agents simultaneously', '- "loop_agent": Runs
+          sub-agent in a loop', 'RULES:', '- Keep it simple - prefer fewer agents when possible', '- Each agent should have
+          a clear, distinct purpose', '- For simple requirements, use one llm_agent', '- Only create multiple agents if they
+          have genuinely different roles']
+  forecaster:
+    type: instance
+    models: [gemini-2.0-flash-lite-001]
+    params:
+      name: forecaster
+      description: "\n    Gets the location, gets the forecast and presents it\n    "
+      instruction: ['You are ''forecaster'', an AI agent specializing in providing weather forecasts. Your primary goal is
+          to determine a user''s location and deliver a concise weather forecast for that location.', '**Capabilities:**',
+        '1.  **Location Identification:** You can identify the user''s location.', '2.  **Weather Data Retrieval:** You can
+          fetch weather forecasts for specific locations using a weather API tool.', '**Response Guidelines:**', '*   **Be
+          concise:** Present the forecast in a clear and brief manner.', '*   **Be friendly:** Use a conversational tone.',
+        '*   **Be accurate:** Always double-check the location and forecast before presenting it.', '*   **Prioritize user
+          needs:** Focus on delivering weather information that helps the user.', '**Tool Usage:**', '1.  **`get_user_location()`
+          Tool:**', '*   **When to use:** At the start of the interaction to determine the user''s current location.', '*   **How
+          to use:** Call this tool with no arguments.', '*   **Example:** `get_user_location()`', '2.  **`get_weather(location)`
+          Tool:**', '*   **When to use:** After determining the user''s location.', '*   **How to use:** Call this tool, passing
+          the identified location as an argument.', '*   **Example:** `get_weather(location="London")`', '**Error Handling:**',
+        '*   **Location Not Found:** If you cannot identify the user''s location:', '*   Politely ask the user to provide
+          their location.', '*   Try to retrieve the weather forecast for the user''s provided location.', '*   **Forecast
+          Retrieval Failure:** If the weather API fails to retrieve a forecast:', '*   Inform the user that the weather information
+          is currently unavailable.', '*   Apologize for the inconvenience.', '*   **Invalid Location:** If the user provides
+          an invalid location:', '*   Inform the user that the location is invalid and ask for a valid one.', '*   Attempt
+          to retrieve the weather forecast again.', '**Output Format:**', 'Present the weather forecast in the following format:',
+        '```', '"Hello! The weather forecast for [Location] is:', '*   [Day]: [Condition] with a temperature of [Temperature]',
+        '*   [Day]: [Condition] with a temperature of [Temperature]"', '```', 'Where:', '*   `[Location]` is the determined
+          location.', '*   `[Day]` represents the day of the week (e.g., "Monday", "Tuesday").', '*   `[Condition]` describes
+          the weather conditions (e.g., "Sunny", "Cloudy", "Rainy").', '*   `[Temperature]` indicates the temperature (e.g.,
+          "25°C", "77°F").']
+  location_identifier:
+    type: instance
+    models: [gemini-2.0-flash-lite-001]
+    tools: [google_search]
+    params:
+      name: location_identifier
+      description: "\n    Identifies the location for the weather forecast.\n    "
+      instruction: [You are a Location Extractor. Your sole purpose is to identify the location for which a weather forecast
+          is requested., 'Here''s how you should operate:', '1.  **Role Definition**: You are a specialized AI designed to
+          extract location names from user input. Your primary goal is to identify the specific place the user wants a weather
+          forecast for.', '2.  **Capabilities**:', '*   **Location Extraction**: You can identify and extract location names
+          from user input, such as cities, regions, or other geographical areas.', '*   **Querying for Missing Information**:
+          If the user''s input does not contain a clear location, you must prompt the user for it.', '3.  **Response Guidelines**:',
+        '*   **Conciseness**: Your response should be brief and to the point.', '*   **Clarity**: Ensure the extracted location
+          is clearly identified.', '*   **Directness**: When asking for a location, use a direct and polite request.', '*   **No
+          Additional Information**: Do not provide any extra information, context, or explanations.', '4.  **Tool Usage**:
+          You do not have any tools. You work directly from the user''s input.', '5.  **Error Handling**:', '*   **Missing
+          Location**: If the user''s input does not specify a location, respond with: "Please provide a location."', '6.  **Output
+          Format**: Your output must adhere to the following format:', '*   If a location is identified: [Location Name]',
+        '*   If no location is identified: "Please provide a location."', 'Examples:', '*   User input: "What is the weather
+          in Paris?" -> Output: Paris', '*   User input: "I want to know the weather." -> Output: Please provide a location.',
+        '*   User input: "Weather in London, please." -> Output: London', '*   User input: "Check weather" -> Output: Please
+          provide a location.']
+  main_agent:
+    type: instance
+    models: [gemini-2.0-flash-lite-001]
+    params:
+      name: main_agent
+      description: "\n    Main agent\n    "
+      instruction: [You are helpful.]
+  prompt_builder:
+    type: instance
+    models: [gemini-2.0-flash]
+    params:
+      name: prompt_builder
+      description: "\n    Prompt Engineering Specialist that creates detailed, effective instructions \n    for AI agents.\
+        \ Focuses on clear role definition, tool usage, response \n    guidelines, and error handling.\n    "
+      instruction: ['You are a Prompt Engineering Specialist. You create detailed, effective instructions for AI agents.',
+        'Given an agent''s basic configuration and purpose, create a comprehensive instruction that includes:', '1. **Role
+          Definition**: Clear identity and purpose', '2. **Capabilities**: What the agent can do and how to use its tools',
+        '3. **Response Guidelines**: How to interact with users', '4. **Tool Usage**: When and how to use each available tool',
+        '5. **Error Handling**: What to do when things go wrong', '6. **Output Format**: How to structure responses (if relevant)',
+        'BEST PRACTICES:', '- Be specific and actionable', '- Include examples when helpful', '- Address edge cases and error
+          scenarios', '- Make it clear and easy to follow', '- Focus on the agent''s specific role and tools', 'Return ONLY
+          the instruction text - no JSON formatting, just the plain text instruction that will be used as the agent''s prompt.']
+  requirements_analyzer:
+    type: instance
+    models: [gemini-2.0-flash]
+    params:
+      name: requirements_analyzer
+      description: "\n    Requirements Analysis Specialist that extracts and structures user requirements \n    for agent\
+        \ creation. Analyzes user input to understand purpose, capabilities, \n    tools needed, and complexity level.\n \
+        \   "
+      instruction: [You are a Requirements Analysis Specialist. Your job is to extract and structure user requirements for
+          agent creation., 'Given a user''s description, analyze and extract structured information.', 'Return your analysis
+          in this exact JSON format (no extra text, just the JSON):', '{', '"purpose": "Clear one-sentence description of
+          what the agent does",', '"main_capabilities": ["capability 1", "capability 2", "capability 3"],', '"suggested_tools":
+          ["web_search", "database_query", "file_operations"],', '"complexity": "simple"', '}', 'Complexity levels:', '- "simple":
+          Single agent with basic tools', '- "medium": 2-3 agents with moderate complexity', '- "complex": 4+ agents or advanced
+          workflows', 'Focus on understanding WHAT the user wants, not HOW to build it. Be specific and concrete.']
+  tool_builder:
+    type: instance
+    models: [gemini-2.0-flash]
+    tools: [add_tool_to_config, update_tool_in_config]
+    params:
+      name: tool_builder
+      description: "\n    Tool Creation Specialist that creates custom tools with Python function code.\n    Writes clean,\
+        \ functional Python code with proper error handling and adds \n    tools to the project configuration.\n    "
+      instruction: [You are a Tool Creation Specialist. You create custom tools with Python function code., 'Your job:', 1.
+          Understand what the tool needs to do, '2. Write clean, functional Python code', 3. Include proper error handling,
+        4. Specify required imports and dependencies, 5. Use add_tool_to_config to add the tool to the project, 'TOOL TYPES:',
+        '- **builtin**: Use existing ADK tools (google_search, url_context, load_memory, etc.)', '- **custom_function**: Write
+          new Python functions', 'For custom functions:', '- Use clear, descriptive function names', '- Include proper type
+          hints', '- Add docstrings explaining what the function does', '- Handle errors gracefully with try/except', '- Return
+          strings (preferred) or simple data types', '- Keep functions focused on one task', 'AVAILABLE BUILTIN TOOLS:', '-
+          google_search: Web search', '- url_context: Load web page content', '- load_memory: Access stored memories', '-
+          preload_memory: Load specific memories', '- load_artifacts: Access saved artifacts', '- transfer_to_agent: Call
+          other agents', '- get_user_choice: Ask user to choose from options', '- exit_loop: Break out of loop agents', Create
+          ONE tool at a time and add it using add_tool_to_config.]
+  weather_agent:
+    type: instance
+    params:
+      name: weather_agent
+      description: "\n    Orchestrates the process of identifying a location and fetching its weather forecast.\n    "
+      sub_agents: [location_identifier, weather_fetcher]
+  weather_data_retriever:
+    type: instance
+    models: [gemini-2.0-flash-lite-001]
+    tools: [google_search]
+    params:
+      name: weather_data_retriever
+      description: "\n    Retrieves the weather forecast data for the specified location.\n    "
+      instruction: ['You are ''weather_data_retriever'', a specialized AI agent designed to retrieve and present weather forecast
+          information. Your primary goal is to provide accurate and user-friendly weather data for specific locations.', '**Capabilities:**',
+        '*   **Weather Data Retrieval:** You can fetch weather forecasts for a given location using the "weather_api" tool.',
+        '*   **Response Formatting:** You can structure the retrieved weather data in a clear and concise manner.', '*   **User
+          Interaction:** You can engage with users to clarify their requests and provide helpful responses.', '**Tools:**',
+        '*   **weather\_api:** This tool takes a location as input (e.g., "London, UK", "Paris") and returns a JSON object
+          containing the weather forecast. Use this tool whenever the user asks for weather information.', '*   To use the
+          `weather_api` tool, format the call as follows:', '```', weather_api.get_weather(location="<location_name>"), '```',
+        Replace `<location_name>` with the location provided by the user., '**Response Guidelines:**', '1.  **Greeting:**
+          Begin by acknowledging the user''s request.', '2.  **Data Retrieval:** Use the `weather_api` tool to fetch the weather
+          data.', '3.  **Data Presentation:** Present the weather data in a clear format, including:', '*   Location', '*   Date
+          and Time of forecast', '*   Temperature (Celsius and Fahrenheit)', '*   Condition (e.g., "sunny," "cloudy," "rainy")',
+        '*   Additional relevant information (e.g., wind speed, precipitation chance)', '4.  **Closing:** End with a helpful
+          closing statement.', '**Error Handling:**', '1.  **Invalid Location:** If the `weather_api` returns an error indicating
+          an invalid location, respond: "I''m sorry, I couldn''t find weather information for that location. Please check
+          the location and try again."', '2.  **API Unavailable:** If the `weather_api` is temporarily unavailable or returns
+          an unexpected error, respond: "I am currently unable to retrieve weather data. Please try again later."', '**Output
+          Format:**', 'Use a conversational tone, but structure the information clearly.', '**Examples:**', '*   **Successful
+          Retrieval:**', '"Hello! I can certainly provide you with the weather information. Here is the weather forecast for
+          London, UK:', '*   **Location:** London, UK', '*   **Date/Time:** Today, October 26, 2023, 14:00', '*   **Temperature:**
+          10°C (50°F)', '*   **Condition:** Cloudy', '*   **Wind Speed:** 15 km/h', I hope this information is helpful!",
+        '*   **Invalid Location:**', '"I''m sorry, I couldn''t find weather information for ''InvalidLocation''. Please check
+          the location and try again."', '*   **API Unavailable:**', '"I am currently unable to retrieve weather data. Please
+          try again later."', '**Workflow:**', '1.  Receive the user''s request for weather information (e.g., "What''s the
+          weather in Paris?").', 2.  Use the `weather_api` tool with the provided location., 3.  Analyze the tool's output
+          (success or error)., 4.  Format a response according to the guidelines (successful or error)., 5.  Present the formatted
+          response to the user.]
+  weather_fetcher:
+    type: instance
+    models: [gemini-2.0-flash-lite-001]
+    params:
+      name: weather_fetcher
+      description: "\n    Fetches the weather forecast for a given location.\n    "
+      instruction: [You are a Weather Forecaster AI. Your purpose is to provide weather forecasts for specific locations.,
+        '**Capabilities:**', '1.  **Weather Information Retrieval:** You can retrieve weather forecasts for a given location.',
+        '2.  **User Interaction:** You should respond to user requests in a clear and concise manner.', '**Response Guidelines:**',
+        '1.  When provided with a location, use the "get\_weather" tool to fetch the weather forecast.', '2.  If the weather
+          information is successfully retrieved, present the forecast in the following format: "Weather forecast for [location]:
+          [temperature], [conditions], [details]".', '3.  If you are unable to retrieve the weather forecast (e.g., due to
+          an API error or invalid location), respond with: "I am unable to fetch the weather forecast at this time."', '**Tool
+          Usage:**', '1.  **get\_weather(location: str):**', '*   Use this tool to get the weather forecast for the specified
+          location.', '*   The ''location'' parameter should be the exact location provided by the user.', '**Error Handling:**',
+        '1.  If the "get\_weather" tool fails to provide a forecast, respond with the error message specified in the "Response
+          Guidelines".', '**Output Format:**', '*   Weather forecast for [location]: [temperature], [conditions], [details]']
+
+models:
+  configs.agent_settings.model:
+    type: literal
+    agents: [agent_creator_orchestrator]
+  gemini-2.0-flash:
+    type: literal
+    agents: [tool_builder, prompt_builder, agent_builder, requirements_analyzer]
+  gemini-2.0-flash-lite-001:
+    type: literal
+    agents: [architecture_planner, main_agent, weather_data_retriever, location_identifier, weather_fetcher, forecaster]
+
+tools:
+  add_agent_to_config:
+    type: wrapper
+    agents: [agent_builder, agent_creator_orchestrator]
+    params:
+      wrapper: FunctionTool
+      wraps: add_agent_to_config
+      description: "Add a new agent to the project configuration.\n\nArgs:\n    session_id: Session identifier\n    agent_name:\
+        \ Name of the agent\n    agent_type: Type of agent (llm_agent, sequential_agent, etc.)\n    description: Agent description\n\
+        \    model: LLM model to use (for LLM agents)\n    instruction: Agent instructions/prompt\n    tools: List of tool\
+        \ names the agent uses\n    sub_agents: List of sub-agent names\n    config_params: Additional configuration parameters\n\
+        \    \nReturns:\n    JSON string with add status"
+  add_tool_to_config:
+    type: wrapper
+    agents: [tool_builder, agent_creator_orchestrator]
+    params:
+      wrapper: FunctionTool
+      wraps: add_tool_to_config
+      description: "Add a new tool to the project configuration.\n\nArgs:\n    session_id: Session identifier\n    tool_name:\
+        \ Name of the tool\n    tool_type: Type of tool (builtin or custom_function)\n    description: Tool description\n\
+        \    builtin_type: Type of builtin tool (if tool_type is builtin)\n    function_code: Python function code (if tool_type\
+        \ is custom_function)\n    imports: Required imports for custom functions\n    dependencies: Required Python packages\n\
+        \    \nReturns:\n    JSON string with add status"
+  agent_builder:
+    type: agent
+    agents: [agent_creator_orchestrator]
+    params:
+      wrapper: AgentTool
+      agent: agent_builder
+  architecture_planner:
+    type: agent
+    agents: [agent_creator_orchestrator]
+    params:
+      wrapper: AgentTool
+      agent: architecture_planner
+  create_project:
+    type: wrapper
+    agents: [agent_creator_orchestrator]
+    params:
+      wrapper: FunctionTool
+      wraps: create_project
+      description: "Create a new agent project configuration.\n\nArgs:\n    session_id: Unique session identifier\n    project_name:\
+        \ Name of the project\n    description: Project description\n    version: Project version\n    \nReturns:\n    JSON\
+        \ string with project creation status"
+  generate_agent_code:
+    type: wrapper
+    agents: [agent_creator_orchestrator]
+    params:
+      wrapper: FunctionTool
+      wraps: generate_agent_code
+      description: "Generate Python code files from the final agent configuration.\nUses the same AgentCodeGenerator class\
+        \ as the main code generator for consistency.\n\nArgs:\n    session_id: Session identifier containing the configuration\n\
+        \    output_base_dir: Base directory for generated code (defaults to current directory)\n    validate_config: Whether\
+        \ to validate the configuration before generation\n    \nReturns:\n    JSON string with generation results"
+  get_config_summary:
+    type: wrapper
+    agents: [agent_creator_orchestrator]
+    params:
+      wrapper: FunctionTool
+      wraps: get_config_summary
+      description: "Get a summary of the current configuration state.\n\nArgs:\n    session_id: Session identifier\n    \n\
+        Returns:\n    JSON string with configuration summary"
+  get_full_config:
+    type: wrapper
+    agents: [agent_creator_orchestrator]
+    params:
+      wrapper: FunctionTool
+      wraps: get_full_config
+      description: "Get the complete configuration for a session.\n\nArgs:\n    session_id: Session identifier\n    \nReturns:\n\
+        \    JSON string with the full configuration"
+  google_search:
+    type: module
+    agents: [weather_data_retriever, location_identifier]
+  prompt_builder:
+    type: agent
+    agents: [agent_builder]
+    params:
+      wrapper: AgentTool
+      agent: prompt_builder
+  requirements_analyzer:
+    type: agent
+    agents: [agent_creator_orchestrator]
+    params:
+      wrapper: AgentTool
+      agent: requirements_analyzer
+  tool_builder:
+    type: agent
+    agents: [agent_creator_orchestrator]
+    params:
+      wrapper: AgentTool
+      agent: tool_builder
+  update_agent_in_config:
+    type: wrapper
+    agents: [agent_builder, agent_creator_orchestrator]
+    params:
+      wrapper: FunctionTool
+      wraps: update_agent_in_config
+      description: "Update an existing agent in the configuration.\n\nArgs:\n    session_id: Session identifier\n    agent_name:\
+        \ Name of the agent to update\n    description: Updated description\n    model: Updated model\n    instruction: Updated\
+        \ instruction\n    tools: Updated tools list\n    sub_agents: Updated sub-agents list\n    config_params: Updated\
+        \ configuration parameters\n    \nReturns:\n    JSON string with update status"
+  update_project_metadata:
+    type: wrapper
+    agents: [agent_creator_orchestrator]
+    params:
+      wrapper: FunctionTool
+      wraps: update_project_metadata
+      description: "Update project metadata.\n\nArgs:\n    session_id: Session identifier\n    main_agent: Name of the main/root\
+        \ agent\n    requirements: Python package requirements\n    environment_variables: Environment variables with actual\
+        \ values\n    environment_variables_example: Environment variables with example values\n    \nReturns:\n    JSON string\
+        \ with update status"
+  update_tool_in_config:
+    type: wrapper
+    agents: [tool_builder, agent_creator_orchestrator]
+    params:
+      wrapper: FunctionTool
+      wraps: update_tool_in_config
+      description: "Update an existing tool in the configuration.\n\nArgs:\n    session_id: Session identifier\n    tool_name:\
+        \ Name of the tool to update\n    description: Updated description\n    function_code: Updated function code\n   \
+        \ imports: Updated imports list\n    dependencies: Updated dependencies list\n    \nReturns:\n    JSON string with\
+        \ update status"
+
+teams:
+  weather_agent:
+    type: sequential
+    agents: [weather_agent, location_identifier, weather_fetcher]
+
+imports:
+  add_agent_to_config: tools.config_merger.add_agent_to_config
+  add_tool_to_config: tools.config_merger.add_tool_to_config
+  agent: agent
+  agent_builder: sub_agents.agent_builder.agent_builder
+  AGENT_BUILDER_PROMPT: prompts.AGENT_BUILDER_PROMPT
+  agent_creator_orchestrator: agent.agent_creator_orchestrator
+  AgentCodeGenerator: code_generator.AgentCodeGenerator
+  AgentConfig: config_schema.AgentConfig
+  AgentProjectConfig: config_schema.AgentProjectConfig
+  AgentTool: google.adk.tools.agent_tool.AgentTool
+  AgentType: config_schema.AgentType
+  Any: typing.Any
+  architecture_planner: sub_agents.architecture_planner.architecture_planner
+  ARCHITECTURE_PLANNER_PROMPT: prompts.ARCHITECTURE_PLANNER_PROMPT
+  BaseModel: pydantic.BaseModel
+  BaseSettings: pydantic_settings.BaseSettings
+  BuiltinToolType: config_schema.BuiltinToolType
+  Config: config.Config
+  ConfigDict: pydantic.ConfigDict
+  create_project: tools.config_merger.create_project
+  CUSTOM_TOOL_CONFIG: test_configs.CUSTOM_TOOL_CONFIG
+  CUSTOMER_SERVICE_CONFIG: test_configs.CUSTOMER_SERVICE_CONFIG
+  datetime: datetime.datetime
+  delete_session: config_merger.delete_session
+  Dict: typing.Dict
+  Enum: enum.Enum
+  Field: pydantic.Field
+  FunctionTool: google.adk.tools.function_tool.FunctionTool
+  generate_agent_code: tools.code_generator.generate_agent_code
+  generate_agent_from_dict: code_generator.generate_agent_from_dict
+  get_config_summary: tools.config_merger.get_config_summary
+  get_default_model: config_schema.get_default_model
+  get_full_config: tools.config_merger.get_full_config
+  google_search: google.adk.tools.google_search
+  json: json
+  List: typing.List
+  list_sessions: config_merger.list_sessions
+  Literal: typing.Literal
+  LlmAgent: google.adk.agents.llm_agent.LlmAgent
+  logging: logging
+  LoopAgent: google.adk.agents.loop_agent.LoopAgent
+  Optional: typing.Optional
+  ORCHESTRATOR_PROMPT: prompts.ORCHESTRATOR_PROMPT
+  os: os
+  ParallelAgent: google.adk.agents.parallel_agent.ParallelAgent
+  Path: pathlib.Path
+  preview_generated_code: code_generator.preview_generated_code
+  prompt_builder: prompt_builder.prompt_builder
+  PROMPT_BUILDER_PROMPT: prompts.PROMPT_BUILDER_PROMPT
+  requirements_analyzer: sub_agents.requirements_analyzer.requirements_analyzer
+  REQUIREMENTS_ANALYZER_PROMPT: prompts.REQUIREMENTS_ANALYZER_PROMPT
+  root_agent: agent.root_agent
+  SEQUENTIAL_PROCESSING_CONFIG: test_configs.SEQUENTIAL_PROCESSING_CONFIG
+  SequentialAgent: google.adk.agents.sequential_agent.SequentialAgent
+  Set: typing.Set
+  SettingsConfigDict: pydantic_settings.SettingsConfigDict
+  shutil: shutil
+  SIMPLE_RESEARCH_AGENT_CONFIG: test_configs.SIMPLE_RESEARCH_AGENT_CONFIG
+  sys: sys
+  tempfile: tempfile
+  tool_builder: sub_agents.tool_builder.tool_builder
+  TOOL_BUILDER_PROMPT: prompts.TOOL_BUILDER_PROMPT
+  ToolConfig: config_schema.ToolConfig
+  types: google.genai.types
+  Union: typing.Union
+  update_agent_in_config: tools.config_merger.update_agent_in_config
+  update_build_context: config_merger.update_build_context
+  update_project_metadata: tools.config_merger.update_project_metadata
+  update_tool_in_config: tools.config_merger.update_tool_in_config
+  uuid: uuid
+  validate_agent_config: config_schema.validate_agent_config
+  validate_configuration: code_generator.validate_configuration
+
+functions:
+  __init__:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self]
+  _build_agent_config:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, agent]
+    params:
+      returns: str
+  _build_tools_list:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, tool_names, config]
+    params:
+      returns: str
+  _collect_imports:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: List[str]
+  _generate_agent_definitions:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: str
+  _generate_agent_docs:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: str
+  _generate_agent_file:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: str
+  _generate_custom_functions:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: str
+  _generate_env_example_file:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: str
+  _generate_env_file:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: str
+  _generate_init_file:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self]
+    params:
+      returns: str
+  _generate_llm_agent:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, agent_name, agent, config]
+    params:
+      returns: str
+  _generate_loop_agent:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, agent_name, agent, config]
+    params:
+      returns: str
+  _generate_parallel_agent:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, agent_name, agent, config]
+    params:
+      returns: str
+  _generate_readme_file:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: str
+  _generate_requirements_file:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: str
+  _generate_sequential_agent:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, agent_name, agent, config]
+    params:
+      returns: str
+  _generate_single_agent:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, agent_name, agent, config]
+    params:
+      returns: str
+  _generate_tool_docs:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: str
+  _sort_agents_by_dependency:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config]
+    params:
+      returns: List[str]
+  _write_files_to_disk:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, files, output_dir]
+  add_agent_to_config:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id, agent_name, agent_type, description, model, instruction, tools, sub_agents, config_params]
+    params:
+      returns: str
+  add_tool_to_config:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id, tool_name, tool_type, description, builtin_type, function_code, imports, dependencies]
+    params:
+      returns: str
+  create_project:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id, project_name, description, version]
+    params:
+      returns: str
+  delete_session:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id]
+    params:
+      returns: str
+  generate_agent_code:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.code_generator
+    args: [session_id, output_base_dir, validate_config]
+    params:
+      returns: str
+  generate_agent_from_config_file:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [config_file, output_dir]
+    params:
+      returns: Dict
+  generate_agent_from_dict:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [config_dict, output_dir]
+    params:
+      returns: Dict
+  generate_from_config:
+    type: sync
+    module: agent_generator_with_config.code_generator
+    args: [self, config, output_dir]
+    params:
+      returns: Dict
+  generate_test_agents:
+    type: sync
+    module: agent_generator_with_config.generate_test_agent
+  get_config_summary:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id]
+    params:
+      returns: str
+  get_default_model:
+    type: sync
+    module: agent_generator_with_config.config_schema
+    params:
+      returns: str
+  get_full_config:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id]
+    params:
+      returns: str
+  get_weather:
+    type: sync
+    module: agent_generator_with_config.generated_agents.agent
+    args: [location]
+    params:
+      returns: str
+  list_sessions:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    params:
+      returns: str
+  main:
+    type: sync
+    module: agent_generator_with_config.generated_agents.quick_start
+  preview_generated_code:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.code_generator
+    args: [session_id, file_name]
+    params:
+      returns: str
+  print_sample_generated_code:
+    type: sync
+    module: agent_generator_with_config.main
+  test_code_generation:
+    type: sync
+    module: agent_generator_with_config.main
+  test_config_validation:
+    type: sync
+    module: agent_generator_with_config.main
+  test_full_agent_generation:
+    type: sync
+    module: agent_generator_with_config.main
+  test_generated_agent_syntax:
+    type: sync
+    module: agent_generator_with_config.main
+  test_model_from_environment:
+    type: sync
+    module: agent_generator_with_config.main
+  update_agent_in_config:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id, agent_name, description, model, instruction, tools, sub_agents, config_params]
+    params:
+      returns: str
+  update_build_context:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id, requirements_analysis, architecture_plan, agents_to_build, tools_to_build, current_agent_being_built,
+      current_tool_being_built]
+    params:
+      returns: str
+  update_project_metadata:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id, main_agent, requirements, environment_variables, environment_variables_example]
+    params:
+      returns: str
+  update_tool_in_config:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.config_merger
+    args: [session_id, tool_name, description, function_code, imports, dependencies]
+    params:
+      returns: str
+  validate_agent_config:
+    type: sync
+    module: agent_generator_with_config.config_schema
+    args: [config]
+    params:
+      returns: List[str]
+  validate_configuration:
+    type: sync
+    module: agent_generator_with_config.meta_agent.tools.code_generator
+    args: [session_id]
+    params:
+      returns: str
+
+variables:
+  DEFAULT_MODEL:
+    type: env
+    params:
+      caller: [os.environ, os.getenv]
+      path: [agent_generator_with_config.config_schema]
+
+files:
+  ../.env:
+    type: pattern
+    actions: [read]
+    params:
+      caller: [os.path.join]
+      pattern: [os.path.dirname(), ../.env]
+  agent_dir:
+    type: variable
+    actions: [read]
+    params:
+      caller: [Path]
+  agent_path:
+    type: literal
+    actions: [read]
+    params:
+      caller: [Path(agent_dir)]
+  config_file:
+    type: variable
+    actions: [read]
+    params:
+      caller: [open, json.load]
+      alias: [f]
+  config_path:
+    type: variable
+    actions: [write]
+    params:
+      caller: [open]
+      alias: [f]
+  file_path:
+    type: variable
+    actions: [write]
+    params:
+      caller: [file_path.write_text]
+  generation_summary.json:
+    type: literal
+    actions: [read]
+    params:
+      caller: [generate_agent_code]
+      path: [output_dir]
+  output_base_dir:
+    type: variable
+    actions: [read]
+    params:
+      caller: [Path]
+  output_dir:
+    type: variable
+    actions: [read, write]
+    params:
+      caller: [Path, output_dir.mkdir]
+  output_path:
+    type: literal
+    actions: [read, write]
+    params:
+      caller: [Path(output_dir), output_path.mkdir]
+  project_config.json:
+    type: literal
+    actions: [read]
+    params:
+      caller: [generate_agent_code]
+      path: [output_dir]
+  quick_start.py:
+    type: literal
+    actions: [read]
+    params:
+      caller: [generate_agent_code]
+      path: [output_dir]
+  quick_start_path:
+    type: variable
+    actions: [write]
+    params:
+      caller: [open]
+      alias: [f]
+  summary_path:
+    type: variable
+    actions: [write]
+    params:
+      caller: [open]
+      alias: [f]
+  test_dir:
+    type: variable
+    actions: [write]
+    params:
+      caller: [test_dir.mkdir]
+
+networks:
+  content:
+    type: api
+    actions: [GET]
+    protocols: [http]
+    params:
+      caller: [_generate_agent_file]
+      dynamic: "True"
+      variable: content
